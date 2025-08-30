@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Toko Digital</title>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+:root {
+  --bg: #0f1115;
+  --bg-soft: #151924;
+  --fg: #e8eaf0;
+  --muted: #aab0be;
+  --primary: #6c8cff;
+  --primary-2: #4f74ff;
+  --card: #121624;
+  --card-border: #20283a;
+  --shadow: 0 10px 25px rgba(0,0,0,.25);
+}
+:root[data-theme="light"]{
+  --bg:#f5f7fc; --bg-soft:#fff; --fg:#111827; --muted:#4b5563;
+  --primary:#3b82f6; --primary-2:#2563eb; --card:#fff; --card-border:#e5e7eb; --shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+*{box-sizing:border-box}
+html,body{
+  height:100%;margin:0;
+  font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  background:var(--bg);color:var(--fg);
+  transition: background .4s ease, color .4s ease;
+}
+
+/* Floating menu button bottom-left */
+.menu-btn{
+  position:fixed; left:12px; bottom:18px;
+  background:var(--bg-soft); color:var(--fg);
+  border:1px solid var(--card-border); padding:10px 12px; font-size:18px;
+  border-radius:10px; z-index:1002; cursor:pointer; box-shadow:var(--shadow);
+  transition:transform .2s ease,opacity .25s ease, background .25s;
+}
+.menu-btn:active{transform:scale(.94)}
+.menu-btn:hover{background:var(--card)}
+.menu-btn.hide{display:none}
+
+/* Sidebar */
+.sidebar{
+  position:fixed; top:0; left:-300px; width:270px; height:100%;
+  background:var(--bg-soft); border-right:1px solid var(--card-border);
+  z-index:1001; display:flex; flex-direction:column;
+  transition:left .35s cubic-bezier(.4,0,.2,1), opacity .35s ease;
+  opacity:0;
+}
+.sidebar.active{left:0; opacity:1}
+.brand{padding:18px 16px; display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--card-border);font-weight:700}
+.brand i{color:var(--primary)}
+.brand-text{letter-spacing:.2px}
+.nav{list-style:none;margin:0;padding:8px;flex:1}
+.nav-link{
+  display:flex;align-items:center;gap:12px;padding:12px;
+  border-radius:12px;color:var(--fg);text-decoration:none;
+  transition:background .25s ease, transform .2s ease;
+}
+.nav-link i{width:22px;text-align:center}
+.nav-link:hover{background:var(--card); transform:translateX(4px)}
+.nav-link.active{background:var(--primary);color:#fff}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--card-border);color:var(--muted);font-size:13px}
+
+/* Overlay */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  display:none;align-items:flex-end;justify-content:center;z-index:1000;
+  animation:fadeIn .35s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.overlay p{margin:0 0 18px;background:rgba(0,0,0,.55);color:#fff;
+  padding:10px 16px;border-radius:999px;font-size:14px;backdrop-filter:blur(2px)}
+
+/* Content */
+.content{padding:28px;max-width:1150px;margin:0 auto}
+@media(min-width:980px){.content{padding:36px 28px 56px}}
+.page.fade {
+  opacity: 0;
+  transform: translateY(20px) scale(.97);
+  filter: blur(4px);
+  transition:
+    opacity .4s cubic-bezier(.4,0,.2,1),
+    transform .4s cubic-bezier(.4,0,.2,1),
+    filter .4s cubic-bezier(.4,0,.2,1);
+  will-change: opacity, transform, filter;
+}
+
+.page.fade.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* Utils */
+.section{margin-bottom:22px}
+.h1{font-size:28px;font-weight:800;margin:4px 0 8px;animation:fadeIn .6s ease}
+.p{color:var(--muted);font-size:14px;line-height:1.6}
+
+/* CTA */
+.cta{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--primary);color:#fff;padding:12px 18px;border-radius:12px;
+  border:none;cursor:pointer;box-shadow:var(--shadow);
+  transition: background .3s, transform .18s;
+}
+.cta:hover{background:var(--primary-2); transform:translateY(-2px)}
+.cta:active{transform:scale(.95)}
+
+/* Grid & cards */
+.grid{display:grid;gap:16px;grid-template-columns:repeat(1,minmax(0,1fr))}
+@media(min-width:640px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:980px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{
+  background:var(--card);border:1px solid var(--card-border);border-radius:16px;
+  padding:16px;box-shadow:var(--shadow);
+  transition:transform .28s cubic-bezier(.22,.61,.36,1), 
+             border-color .25s, box-shadow .25s;
+}
+.card:hover{
+  transform:translateY(-6px) scale(1.02);
+  border-color:var(--primary);
+  box-shadow:0 12px 28px rgba(108,140,255,.25);
+}
+.card h3{margin:6px 0 8px;font-size:18px}
+.card p{margin:0 0 10px;color:var(--muted);font-size:14px}
+.price{font-weight:800;margin:6px 0 12px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.tag{
+  font-size:12px;padding:6px 10px;border-radius:999px;
+  border:1px solid var(--card-border);background:transparent;color:var(--muted);
+  transition:background .25s, color .25s;
+}
+.tag:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 12px;
+  border-radius:10px;cursor:pointer;border:1px solid var(--card-border);
+  background:transparent;color:var(--fg);
+  transition:background .25s, border-color .25s, transform .15s;
+}
+.btn:hover{background:var(--bg-soft);border-color:var(--primary); transform:translateY(-2px)}
+.btn:active{transform:scale(.95)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover{background:var(--primary-2)}
+
+/* Settings */
+.settings-group{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:16px;margin-bottom:16px;transition:box-shadow .25s}
+.settings-group:hover{box-shadow:0 10px 20px rgba(0,0,0,.15)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+
+/* Toggle */
+.switch{position:relative;width:52px;height:28px}
+.switch input{display:none}
+.slider{position:absolute;inset:0;background:#9ca3af;border-radius:999px;transition:.3s cubic-bezier(.4,0,.2,1)}
+.slider::before{content:"";position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow)}
+.switch input:checked + .slider{background:var(--primary)}
+.switch input:checked + .slider::before{transform:translateX(24px)}
+
+/* Profile */
+.profile{
+  display:flex;align-items:center;gap:14px;background:var(--card);
+  border:1px solid var(--card-border);border-radius:16px;
+  padding:14px 16px;max-width:680px;transition:box-shadow .25s;
+}
+.profile:hover{box-shadow:0 10px 20px rgba(108,140,255,.25)}
+.avatar{
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;
+  position:relative;overflow:hidden;
+}
+.avatar::after{
+  content:"";position:absolute;inset:-30%;background:rgba(255,255,255,.25);
+  transform:rotate(25deg);animation:shine 3s infinite;
+}
+@keyframes shine{
+  0%{transform:translateX(-150%) rotate(25deg)}
+  60%{transform:translateX(150%) rotate(25deg)}
+  100%{transform:translateX(150%) rotate(25deg)}
+}
+
+/* Helper */
+.hidden{display:none!important}
+  </style>
+</head>
+<body>
+
+  <!-- Hamburger (floating bottom-left) -->
+  <button id="menu-btn" class="menu-btn" aria-label="Menu">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar" aria-label="Sidebar">
+    <div class="brand">
+      <i class="fa-solid fa-bolt"></i>
+      <span class="brand-text">Toko Digital</span>
+    </div>
+    <ul class="nav">
+      <li><a href="#" class="nav-link active" data-page="home"><i class="fas fa-home"></i><span data-i18n="menu.home">Home</span></a></li>
+      <li><a href="#" class="nav-link" data-page="shop"><i class="fas fa-shopping-cart"></i><span data-i18n="menu.shop">Shop</span></a></li>
+      <li><a href="#" class="nav-link" data-page="tele"><i class="fas fa-user"></i><span data-i18n="menu.tele">Sosial Media</span></a></li>
+      <li><a href="#" class="nav-link" data-page="server"><i class="fas fa-server"></i><span data-i18n="menu.server">Server</span></a></li>
+      <li><a href="#" class="nav-link" data-page="file"><i class="fas fa-file-alt"></i><span data-i18n="menu.file">File</span></a></li>
+      <li><a href="#" class="nav-link" data-page="follower"><i class="fas fa-user-plus"></i><span data-i18n="menu.follower">Suntik Follower</span></a></li>
+      <li><a href="#" class="nav-link" data-page="settings"><i class="fas fa-cog"></i><span data-i18n="menu.settings">Settings</span></a></li>
+    </ul>
+    <div class="sidebar-footer"><small>© <span id="year"></span> Toko Digital</small></div>
+  </aside>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay" role="button" aria-label="Tutup Sidebar">
+    <p data-i18n="overlay.tap">Ketuk untuk menutup sidebar</p>
+  </div>
+
+  <!-- Konten utama -->
+  <main class="content">
+    <div id="page-content" class="page fade"></div>
+  </main>
+
+  <script>
+const $ = (sel, ctx = document) => ctx.querySelector(sel);
+const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+const sidebar = $('#sidebar');
+const overlay = $('#overlay');
+const menuBtn = $('#menu-btn');
+const pageContent = $('#page-content');
+$('#year').textContent = new Date().getFullYear();
+const i18n = {
+  id: {
+    menu: { 
+      home: "Home", 
+      shop: "Shop", 
+      tele: "Akun", 
+      settings: "Settings", 
+      server: "Server", 
+      file: "Script", 
+      follower: "Beli Follower" 
+    },
+    overlay: { tap: "Ketuk untuk menutup sidebar" },
+    home: {
+      title: " Selamat Datang",
+      desc: "Kami menyediakan nomor kosong, sewa bot, panel server, dan file script dengan harga terjangkau.",
+      cta: "Mulai Belanja"
+    },
+    shop: {
+      nokosTitle: "Nomor Kosong",
+      nokosDesc: "Tersedia untuk beberapa aplikasi, harga terjangkau.",
+      nokosPriceRange: "Rp 5.000",
+      nokosSaved: "Save Rp 10.000",
+      botTitle: "Sewa Bot",
+      botDesc: "Sewa bot per jam / per hari / per bulan. Harga menyesuaikan.",
+      priceFlexible: "Harga menyesuaikan",
+      order: "Pesan",
+      detail: "Detail"
+    },
+    tele: {
+      title: "Akun Sosmed",
+      desc: "Berikut ini akun sosmedku.",
+      username: "@lanzz7z",
+      note: "."
+    },
+    settings: {
+      title: "Pengaturan",
+      theme: "Tema",
+      dark: "Gelap",
+      light: "Terang",
+      lang: "Bahasa",
+      langId: "Indonesia",
+      langEn: "English"
+    },
+    server: {
+      title: "Panel Pterodactyl",
+      desc: "Pilih paket resource sesuai kebutuhan. Unlimited Rp 10.000. Harga lain menyesuaikan.",
+      unlimited: "Unlimited Rp 10.000",
+      order: "Pesan"
+    },
+    file: {
+      title: "File / Script",
+      desc: "Jual file digital: script bug untuk WhatsApp dan Telegram, script Multidevice untuk WhatsApp, serta function bug."
+    },
+    follower: {
+      title: "Beli Follower",
+      desc: "Beli pengikut untuk akun media sosial kamu.",
+      ig: "Instagram Followers",
+      tiktok: "TikTok Followers",
+      yt: "YouTube Subscribers",
+      order: "Pesan"
+    }
+  },
+
+  en: {
+    menu: { 
+      home: "Home", 
+      shop: "Shop", 
+      tele: "Account", 
+      settings: "Settings", 
+      server: "Server", 
+      file: "Script", 
+      follower: "Buy Followers" 
+    },
+    overlay: { tap: "Tap to close sidebar" },
+    home: {
+      title: " Welcome",
+      desc: "We provide virtual numbers, bot rental, server panels, and script files at friendly prices.",
+      cta: "Start Shopping"
+    },
+    shop: {
+      nokosTitle: "Virtual Numbers",
+      nokosDesc: "Available for multiple applications, affordable price.",
+      nokosPriceRange: "IDR 5.000",
+      nokosSaved: "Saved IDR 10.000",
+      botTitle: "Bot Rental",
+      botDesc: "Rent per hour / day / month. Price varies.",
+      priceFlexible: "Price varies",
+      order: "Order",
+      detail: "Details"
+    },
+    tele: {
+      title: "Social media accounts",
+      desc: "Here are my social media accounts.",
+      username: "@lanzz7z",
+      note: "."
+    },
+    settings: {
+      title: "Settings",
+      theme: "Theme",
+      dark: "Dark",
+      light: "Light",
+      lang: "Language",
+      langId: "Indonesian",
+      langEn: "English"
+    },
+    server: {
+      title: "Servers / Pterodactyl Panel",
+      desc: "Choose a resource plan. Unlimited IDR 10.000. Others vary.",
+      unlimited: "Unlimited IDR 10.000",
+      order: "Order"
+    },
+    file: {
+      title: "Files / Scripts",
+      desc: "Digital files: bug scripts for WhatsApp & Telegram, Multidevice script for WhatsApp, and bug functions."
+    },
+    follower: {
+      title: "Buy Followers",
+      desc: "Buy followers for your social media accounts.",
+      ig: "Instagram Followers",
+      tiktok: "TikTok Followers",
+      yt: "YouTube Subscribers",
+      order: "Order"
+    }
+  }
+};
+
+const state = {
+  lang: localStorage.getItem('lang') || 'id',
+  theme: localStorage.getItem('theme') || 'dark',
+  activePage: 'home'
+};
+document.documentElement.setAttribute('data-theme', state.theme);
+document.documentElement.lang = state.lang;
+
+function applyStaticI18n(){
+  $$('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    const text = key.split('.').reduce((acc,k)=>acc?.[k], i18n[state.lang]);
+    if(text) el.textContent = text;
+  });
+}
+applyStaticI18n();
+function Home(){
+  const t = i18n[state.lang].home;
+  return `
+    <section class="section home-page">
+      <h1 class="h1"><i class="fa-solid fa-house"></i> ${t.title}</h1>
+      <p class="p">${t.desc}</p>
+      <button class="cta" id="cta-shop"><i class="fa-solid fa-cart-plus"></i> ${t.cta}</button>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        <div class="card">
+          <h3><i class="fa-solid fa-sim-card"></i> ${i18n[state.lang].shop.nokosTitle}</h3>
+          <p>${i18n[state.lang].shop.nokosDesc}</p>
+          <div class="tags">
+            <span class="tag">Best Seller</span>
+            <span class="tag">WhatsApp</span>
+            <span class="tag">VirtualSim</span>
+          </div>
+          <div class="price">${i18n[state.lang].shop.nokosPriceRange}</div>
+          <div class="actions">
+            <button class="btn primary order-btn" data-product="Nokos"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].shop.order}</button>
+            <button class="btn" data-go="shop"><i class="fa-solid fa-circle-info"></i> ${i18n[state.lang].shop.detail}</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-robot"></i> ${i18n[state.lang].shop.botTitle}</h3>
+          <p>${i18n[state.lang].shop.botDesc}</p>
+          <div class="tags">
+            <span class="tag">Auto Reply</span>
+            <span class="tag">Lowest price</span>
+            <span class="tag">Guaranteed</span>
+          </div>
+          <div class="price">Rp 5.000 – Rp 10.000</div>
+          <div class="actions">
+            <button class="btn primary order-btn" data-product="Sewa Bot"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].shop.order}</button>
+            <button class="btn" data-go="file"><i class="fa-solid fa-file-code"></i> ${i18n[state.lang].shop.detail}</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-server"></i> Panel</h3>
+          <p>Paket 1GB – 10GB & Unlimited Rp 10.000.</p>
+          <div class="tags"><span class="tag">Pterodactyl</span><span class="tag">SSD</span></div>
+          <div class="price">Rp 5.000 – Rp 10.000</div>
+          <div class="actions">
+            <button class="btn primary" data-go="server"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].server.order}</button>
+            <button class="btn" data-go="file"><i class="fa-solid fa-file"></i> ${i18n[state.lang].file.title}</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function Shop(){
+  const t = i18n[state.lang].shop;
+  return `
+    <section class="section">
+      <h1 class="h1"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].menu.shop}</h1>
+      <p class="p">${t.nokosDesc}</p>
+    </section>
+
+    <section class="section">
+      <h3><i class="fa-solid fa-sim-card"></i> ${t.nokosTitle}</h3>
+      <div class="grid">
+        <div class="card">
+          <h3><i class="fa-solid fa-sim-card"></i> ${t.nokosTitle}</h3>
+          <p>${t.nokosDesc}</p>
+          <div class="tags"><span class="tag">${t.nokosPriceRange}</span><span class="tag">${t.nokosSaved}</span></div>
+          <div class="price">Rp 5.000 – Rp 10.000</div>
+          <div class="actions">
+            <button class="btn primary order-btn" data-product="WhatsApp Nokos"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button>
+            <button class="btn"><i class="fa-solid fa-circle-info"></i> ${t.detail}</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-mobile-screen"></i> Multi-App</h3>
+          <p>Support berbagai aplikasi dan negara. Tanyakan ketersediaan.</p>
+          <div class="tags"><span class="tag">Global</span><span class="tag">Flexible</span></div>
+          <div class="price">Rp 10.000 – Rp 15.000</div>
+          <div class="actions">
+            <button class="btn primary order-btn" data-product="Multidevice Nokos"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button>
+            <button class="btn"><i class="fa-solid fa-circle-info"></i> ${t.detail}</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3><i class="fa-solid fa-robot"></i> ${t.botTitle}</h3>
+      <div class="grid">
+        <div class="card">
+          <h3><i class="fa-solid fa-clock"></i> Per Jam</h3><p>${t.botDesc}</p><div class="price">Rp 5.000</div>
+          <div class="actions"><button class="btn primary order-btn" data-product="Sewa Bot - Per Jam"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button></div>
+        </div>
+        <div class="card">
+          <h3><i class="fa-solid fa-calendar-day"></i> Per Hari</h3><p>${t.botDesc}</p><div class="price">Rp 10.000</div>
+          <div class="actions"><button class="btn primary order-btn" data-product="Sewa Bot - Per Hari"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button></div>
+        </div>
+        <div class="card">
+          <h3><i class="fa-solid fa-calendar-days"></i> Per Bulan</h3><p>${t.botDesc}</p><div class="price">Rp 20.000</div>
+          <div class="actions"><button class="btn primary order-btn" data-product="Sewa Bot - Per Bulan"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button></div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function Telegram(){
+  const accounts = [
+    { name: "Telegram", username: "@lanzzx1", url: "https://t.me/lanzzx1", icon: "fa-brands fa-telegram", avatar: "https://files.catbox.moe/726pvk.jpg" },
+    { name: "Tiktok", username: "@lanzz7z", url: "https://www.tiktok.com/@lanzz7z?_t=ZS-8zJ9Sr1AztX&_r=1", icon: "fa-brands fa-tiktok", avatar: "https://files.catbox.moe/9gxxv7.jpg" },
+    { name: "Instagram", username: "@who_langg", url: "https://www.instagram.com/who_langg?igsh=dWEycm55cXM2ZnF0", icon: "fa-brands fa-instagram", avatar: "https://files.catbox.moe/f90mkb.jpg" }
+  ];
+
+  return `
+    <section class="section">
+      <h1 class="h1"><i class="fa-solid fa-user"></i> Akun</h1>
+      <p class="p">Berikut akun sosial media saya:</p>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        ${accounts.map(acc=>`
+          <a href="${acc.url}" target="_blank" style="text-decoration:none;color:inherit;">
+            <div class="profile">
+              <div class="avatar" style="
+                ${acc.avatar?`background: url('${acc.avatar}') center/cover no-repeat;`:`background:#ccc;`} 
+                width:54px; height:54px; border-radius:50%;">
+                ${!acc.avatar?`<i class="${acc.icon}"></i>`:``}
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:16px;">${acc.username}</div>
+                <div class="p">${acc.name}</div>
+              </div>
+            </div>
+          </a>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function Settings(){
+  const t = i18n[state.lang].settings;
+  const isDark = state.theme === 'dark';
+  return `
+    <section class="section"><h1 class="h1"><i class="fa-solid fa-gear"></i> ${t.title}</h1></section>
+
+    <div class="settings-group">
+      <div class="row">
+        <div>
+          <div style="font-weight:700">${t.theme}</div>
+          <div class="p">${isDark ? t.dark : t.light}</div>
+        </div>
+        <label class="switch" title="Theme">
+          <input type="checkbox" id="theme-toggle" ${isDark ? 'checked' : ''} />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="row">
+        <div>
+          <div style="font-weight:700">${t.lang}</div>
+          <div class="p">${state.lang === 'id' ? t.langId : t.langEn}</div>
+        </div>
+        <select id="lang-select" style="padding:8px 10px;border-radius:10px;border:1px solid var(--card-border);background:var(--bg-soft);color:var(--fg)">
+          <option value="id" ${state.lang==='id'?'selected':''}>Indonesia</option>
+          <option value="en" ${state.lang==='en'?'selected':''}>English</option>
+        </select>
+      </div>
+    </div>
+  `;
+}
+
+function Server(){
+  const t = i18n[state.lang].server;
+  const plans = [
+    {name:'Panel 1GB', price:'Rp 5.000'},
+    {name:'Panel 2GB', price:'Rp 6.000'},
+    {name:'Panel 3GB', price:'Rp 6.500'},
+    {name:'Panel 4GB', price:'Rp 7.000'},
+    {name:'Panel 5GB', price:'Rp 7.500'},
+    {name:'Panel 6GB', price:'Rp 8.000'},
+    {name:'Panel 7GB', price:'Rp 8.500'},
+    {name:'Panel 8GB', price:'Rp 9.000'},
+    {name:'Panel 9GB', price:'Rp 9.250'},
+    {name:'Panel 10GB', price:'Rp 9.500'},
+    {name:'Panel Unlimited', price:'Rp 10.000', tag: t.unlimited}
+  ];
+  return `
+    <section class="section"><h1 class="h1"><i class="fa-solid fa-server"></i> ${t.title}</h1><p class="p">${t.desc}</p></section>
+    <section class="section"><div class="grid">
+      ${plans.map(p=>`
+        <div class="card">
+          <h3><i class="fa-solid fa-database"></i> ${p.name}</h3>
+          <p>Pterodactyl panel • uptime optimal • support basic.</p>
+          <div class="tags">${p.tag?`<span class="tag">${p.tag}</span>`:''}<span class="tag">SSD</span></div>
+          <div class="price">${p.price}</div>
+          <div class="actions"><button class="btn primary order-btn" data-product="${p.name}"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button></div>
+        </div>
+      `).join('')}
+    </div></section>
+  `;
+}
+
+function FilePage(){
+  const t = i18n[state.lang].file;
+  return `
+    <section class="section"><h1 class="h1"><i class="fa-solid fa-file"></i> ${t.title}</h1><p class="p">${t.desc}</p></section>
+    <section class="section"><div class="grid">
+      <div class="card">
+        <h3><i class="fa-solid fa-bug"></i> Script Bug Via WhatsApp</h3>
+        <p>Script bug untuk mengirimkan bug dari whatsapp..</p>
+        <div class="tags"><span class="tag">WhatsApp</span><span class="tag">Bug</span></div>
+        <div class="price">Rp 20.000</div>
+        <div class="actions"><button class="btn primary order-btn" data-product="Script Bug via WhatsApp"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].shop.order}</button></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-bug"></i> Script Bug via Telegram</h3>
+        <p>Script bug untuk mengirimkan bug dari telegram.</p>
+        <div class="tags"><span class="tag">Telegram</span><span class="tag">Bug</span></div>
+        <div class="price">Rp 20.000</div>
+        <div class="actions"><button class="btn primary order-btn" data-product="Script Bug via Telegram"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].shop.order}</button></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-code"></i> Script Multidevice Via WhatsApp</h3>
+        <p>Script multidevice untuk menjadi pelayan anda.</p>
+        <div class="tags"><span class="tag">Multidevice</span><span class="tag">WhatsApp</span></div>
+        <div class="price">Rp 5.000</div>
+        <div class="actions"><button class="btn primary order-btn" data-product="Script Multidevice WhatsApp"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].shop.order}</button></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-solid fa-code-branch"></i> Function Bug</h3>
+        <p>Tersedia banyak function bug.</p>
+        <div class="tags"><span class="tag">Function</span><span class="tag">Bug</span></div>
+        <div class="price">Rp 5.000 – Rp 10.000</div>
+        <div class="actions"><button class="btn primary order-btn" data-product="Function Bug"><i class="fa-solid fa-cart-plus"></i> ${i18n[state.lang].shop.order}</button></div>
+      </div>
+    </div></section>
+  `;
+}
+
+function FollowerPage(){
+  const t = i18n[state.lang].follower;
+  return `
+    <section class="section">
+      <h1 class="h1"><i class="fa-solid fa-user-plus"></i> ${t.title}</h1>
+      <p class="p">${t.desc}</p>
+    </section>
+
+    <section class="section"><div class="grid">
+      <div class="card">
+        <h3><i class="fa-brands fa-instagram"></i> ${t.ig}</h3>
+        <p>Tambahkan followers IG dengan cepat & real.</p>
+        <div class="price">Rp 7.000 / 100 followers</div>
+        <div class="actions"><button class="btn primary order-btn" data-product="${t.ig}"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-brands fa-tiktok"></i> ${t.tiktok}</h3>
+        <p>Followers TikTok aktif & aman.</p>
+        <div class="price">Rp 5.000 / 100 followers</div>
+        <div class="actions"><button class="btn primary order-btn" data-product="${t.tiktok}"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fa-brands fa-youtube"></i> ${t.yt}</h3>
+        <p>Subscribers organik & cepat masuk.</p>
+        <div class="price">Rp 10.000 / 100 subs</div>
+        <div class="actions"><button class="btn primary order-btn" data-product="${t.yt}"><i class="fa-solid fa-cart-plus"></i> ${t.order}</button></div>
+      </div>
+    </div></section>
+  `;
+}
+
+// Router map
+const routes = { 
+  home: Home, shop: Shop, tele: Telegram, 
+  settings: Settings, server: Server, 
+  file: FilePage, follower: FollowerPage 
+};
+
+// Render
+function render(page){
+  state.activePage = page;
+  $$('.nav-link').forEach(a=>a.classList.toggle('active', a.dataset.page===page));
+  pageContent.classList.remove('show');
+  setTimeout(()=>{
+    pageContent.innerHTML = routes[page]();
+    pageContent.classList.add('show');
+
+    // Bind after render
+    const cta = $('#cta-shop'); if(cta) cta.addEventListener('click', ()=> go('shop'));
+    $$('.btn[data-go]').forEach(b=>b.addEventListener('click', ()=> go(b.dataset.go)));
+    $$('.btn[data-go]').forEach(b=>{ if(b.dataset.go===undefined){} });
+
+    // theme toggle
+    const themeToggle = $('#theme-toggle');
+    if(themeToggle) themeToggle.addEventListener('change', ()=> setTheme(themeToggle.checked ? 'dark' : 'light'));
+
+    // lang select
+    const langSelect = $('#lang-select');
+    if(langSelect) langSelect.addEventListener('change', ()=> setLang(langSelect.value));
+
+// order buttons -> open Telegram
+$$('.order-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const product = btn.dataset.product || 'Order';
+    openTelegramOrder(product);
+     });
+    });
+
+  },180);
+}
+
+// Navigation helpers
+function go(page){ closeSidebar(); render(page); }
+
+// Sidebar open/close
+menuBtn.addEventListener('click', ()=>{
+  sidebar.classList.add('active');
+  overlay.style.display = 'flex';
+  menuBtn.classList.add('hide');
+});
+overlay.addEventListener('click', closeSidebar);
+function closeSidebar(){
+  sidebar.classList.remove('active');
+  overlay.style.display = 'none';
+  menuBtn.classList.remove('hide');
+}
+
+// Theme & Lang
+function setTheme(theme){
+  state.theme = theme;
+  localStorage.setItem('theme', theme);
+  document.documentElement.setAttribute('data-theme', theme);
+  if(state.activePage==='settings') render('settings');
+}
+function setLang(lang){
+  state.lang = lang;
+  localStorage.setItem('lang', lang);
+  document.documentElement.lang = lang;
+  applyStaticI18n();
+  render(state.activePage);
+}
+
+// Telegram order opener
+function openTelegramOrder(product){
+  const username = "lanzz7z"; // ganti dengan username kamu tanpa '@'
+  const url = `https://t.me/${username}`;
+  window.open(url, '_blank');
+}
+
+// Hook nav links
+window.addEventListener('DOMContentLoaded', ()=>{
+  $$('.nav-link').forEach(a=> a.addEventListener('click', e=>{ e.preventDefault(); go(a.dataset.page); }));
+  applyStaticI18n();
+  render('home');
+});
+  </script>
+</body>
+</html>
